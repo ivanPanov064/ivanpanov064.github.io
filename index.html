@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Website</title>
+</head>
+<body>
+    <ul id="navbar">
+        <li><a href="#" data-page="https://ivanpanov064.github.io/about.html">About</a></li>
+        <li><a href="#" data-page="https://ivanpanov064.github.io/contact.html">Contact</a></li>
+        <!-- Add more menu items as needed -->
+    </ul>
+    <iframe id="content-iframe" src=""></iframe>
+    <script>
+        const iframe = document.getElementById("content-iframe");
+        const navbar = document.getElementById("navbar");
+        const pageCache = {}; // Store cached pages
+
+        navbar.addEventListener("click", (e) => {
+            if (e.target.tagName === "A") {
+                const page = e.target.getAttribute("data-page");
+                if (page) {
+                    loadPage(page);
+                }
+            }
+        });
+
+        function loadPage(page) {
+            if (pageCache[page]) {
+                // If the page is in the cache, load it from there
+                iframe.srcdoc = pageCache[page];
+            } else {
+                // If the page is not in the cache, fetch it and store it in the cache
+                fetch(page)
+                    .then((response) => response.text())
+                    .then((content) => {
+                        pageCache[page] = content;
+                        iframe.srcdoc = content;
+                    })
+                    .catch((error) => {
+                        console.error("Error loading page:", error);
+                    });
+            }
+        }
+    </script>
+</body>
+</html>
