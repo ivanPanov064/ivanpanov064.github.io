@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selfie Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #aaa;
+        }
+        #image-container {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .image-box {
+            margin: 10px;
+            text-align: center;
+        }
+        img {
+            width: 100px;
+            height: 100px;
+            border-radius: 5px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <h2>Selfie Search</h2>
+    <button id="capture-btn">Take Selfie & Search</button>
+    <div id="image-container"></div>
+
+    <script>
+        document.getElementById("capture-btn").addEventListener("click", async function() {
+            const video = document.createElement("video");
+            video.style.display = "none";
+            document.body.appendChild(video);
+            
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+            canvas.width = 300;
+            canvas.height = 300;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            stream.getTracks().forEach(track => track.stop());
+            document.body.removeChild(video);
+            
+            const selfie = canvas.toDataURL("image/jpeg");
+            fetch("https://your-api-endpoint.com/search", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ image: selfie })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById("image-container");
+                container.innerHTML = "";
+                data.images.forEach(url => {
+                    const div = document.createElement("div");
+                    div.classList.add("image-box");
+                    div.innerHTML = `<img src="${url}" /><br><a href="${url}" download><button>Download</button></a>`;
+                    container.appendChild(div);
+                });
+            })
+            .catch(error => console.error("Error:", error));
+        });
+    </script>
+</body>
+</html>
